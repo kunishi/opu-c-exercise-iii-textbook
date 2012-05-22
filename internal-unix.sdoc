@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc xml:lang="ja">
+<head>
+<title>UNIX内部</title>
+<author>国島丈生</author>
+<date>2002-05</date>
+</head>
+<body>
+<section title="小規模アプリケーション: cat">
+ls や cat など、標準的に UNIX 環境で用意されているコマンドも C 言語で
+書かれている。ソースファイルが /usr/src の下にあるので、ls や cat など、
+普段使い慣れているコマンドのソースを実際にコンパイルしたり、内容を読ん
+だりする。
+<subsection title="cat">
+ディレクトリ /usr/src/bin/cat/ の下にある。C言語のソースは一つだけなので、
+中身を簡単に眺めた後、<a href="#cons:cat"></a>のようにコンパイルをしてみる。
+<console title="catのコンパイル" id="cons:cat">
+# cc -o cat cat.c
+</console>
+
+こののち、課題1を行う。
+</subsection>
+<subsection title="echo">
+ディレクトリ /usr/src/bin/echo/ の下にある。C言語のソースは一つだけ(<a
+href="#src:echo"></a>)である。このコマンドに関して、課題2を行う。
+<program title="echo.c" id="src:echo">
+<![CDATA[
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int
+main(argc, argv)
+        int argc;
+        char *argv[];
+{
+        int nflag;
+
+        /* This utility may NOT do getopt(3) option parsing. */
+        if (*++argv && !strcmp(*argv, "-n")) {
+                ++argv;
+                nflag = 1;
+        }
+        else
+                nflag = 0;
+
+        while (argv[0]) {
+                int len = strlen(argv[0]);
+
+                if (len >= 2 && !argv[1]
+		    && argv[0][len - 2] == '\\'
+		    && argv[0][len - 1] == 'c') {
+                        argv[0][len - 2] = '\0';
+                        nflag = 1;
+                }
+                (void)printf("%s", argv[0]);
+                if (*++argv)
+                        putchar(' ');
+        }
+        if (!nflag)
+                putchar('\n');
+        exit(0);
+}
+]]>
+</program>
+</subsection>
+</section>
+<section title="大規模アプリケーション">
+ここまで見てきたのはソースファイルの数が少ないものばかりであったが、よ
+り大規模なアプリケーションになると、ソースファイルの数もひじょうに増え、
+コンパイル作業もたいへんになる。そのため、make など、コンパイル作業を
+補助するツールが必要になってくる。
+
+大規模アプリケーションに関して、課題3・課題4を行う。
+</section>
+<section title="OSを壊す実験">
+最後の実験として、rootで "rm -rf /" を実行する実験を行う。
+
+UNIXのファイルシステムは / からはじまる木構造になっている。また、
+rootは強力な権限を持つユーザであり、すべてのファイルやディレクトリを変更・
+上書き・消去できる権限を持つ。
+一方、UNIXでは、今実行しようとする rm や、各種daemonプログラム、また
+UNIXの実行の核であるカーネル(kernel)とよばれる実行ファイルもすべて、一つ
+のファイルとして存在している。
+
+したがって、この実験の目的は、「UNIXで、現在実行中のプログラムのファイル
+を消去しようとすると何が起こるか確かめる」と言い換えることができる。
+
+作業手順を実験時に指示するので、それにしたがい作業を進めること。また、
+課題を必ず参照すること。
+</section>
+<section title="後始末">
+これで実験は終了である。次のグループの実験のために、組み立てたPCを元の状
+態に分解し、片付ける。部品を壊さないよう、丁寧に扱うこと。また、元の箱・袋に
+入っているか、ケースのネジの締め忘れがないか、などにも注意しておく。
+</section>
+<section sequencable="false" title="課題">
+<subsection sequencable="false" title="課題0">
+実験の過程で直面したトラブルについて、その症状、原因の究明過程、原因、
+解決方法などについて(自分で調べるなどして)記述せよ。
+</subsection>
+<subsection sequencable="false" title="課題1" id="ex:cat">
+/usr/src/bin/cat/ の下でコンパイルして作った実行形式ファイル cat が
+/bin/cat と同じ振舞いをするか、具体例を用いて確かめよ。確かめた方法も
+記述せよ。
+</subsection>
+<subsection sequencable="false" title="課題2" id="ex:echo">
+echo というコマンド(/usr/bin/echo)について、以下の課題を行え。
+<ol>
+<li>実際にコマンドを実行させ、その振舞いを調べよ。</li>
+<li><a href="#src:echo"></a>のC言語プログラムを解析し、どういう動作をする
+コマンドか述べよ。</li>
+<li>オプションを付けたときの振舞いについて、C言語プログラムの解析結果をも
+とにコマンドを実行させ、振舞いを調べよ。</li>
+</ol>
+適宜オンラインマニュアルを参照すること。なお、Solaris では
+/usr/ucb/echo がほぼ同じ動作をする。
+</subsection>
+<subsection sequencable="false" title="課題3" id="ex:make">
+/usr/src/bin/ls にて root で makeに関して次のような操作を行い<note>で
+きあがった実行形式ファイルは ls である。実際に実行して、振舞いを確認し
+てみるとよい。</note>、その振舞いを述べよ。
+<ol>
+<li>make</li>
+<li>make clean</li>
+<li>make</li>
+<li>rm ls; make</li>
+<li>rm ls.o; make</li>
+<li>touch util.c; make (touch が何をするコマンドか調べてレポートに記載
+すること)</li>
+</ol>
+上記の結果より、make が何を行うコマンドなのかまとめよ。
+</subsection>
+<subsection sequencable="false" title="課題4" id="ex:emacs">
+emacsのソース(emacs-20.7.tar.gz)を展開し、この中に .c ファイル、.h ファ
+イルがそれぞれいくつ含まれているか調べよ。調べた方法も記載すること。
+</subsection>
+<subsection sequencable="false" title="課題5" id="ex:rmrf">
+「OSを壊す実験」について、以下の内容をまとめ、報告せよ。
+<ol>
+<li>実験結果の予想。かならず実験を始める前に各自で結果の予想を立てよ。</li>
+<li>実験手順の報告。rm を実行中に試したことがあれば、それについても述
+べること。</li>
+<li>実験結果の報告。</li>
+<li>実験結果の考察。予想と合っていたかどうか、なぜこのような結果が出て、
+自分の予想はどこが違っていたのか、など。</li>
+</ol>
+実際に何が起こるか、結果を記した WWW ページがある(URLは演習中に指示)。
+このページを見たり、オペレーティングシステムに関する書籍を参照するなど
+して、まとめること。
+<!-- URL は http://www.sra.co.jp/people/katsu/doc/rmrf/ -->
+</subsection>
+<subsection sequencable="false" title="課題6" id="ex:impression">
+来年度以降の参考にしますので、今回の実験を通しての感想を書いてくだ
+さい。
+</subsection>
+</section>
+</body>
+</doc>

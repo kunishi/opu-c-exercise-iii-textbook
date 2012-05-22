@@ -1,0 +1,1515 @@
+\documentclass[10pt,a4j]{jbook}
+
+\usepackage{alltt}
+\usepackage{ascmac}
+\usepackage{times}
+\usepackage{graphics}
+\usepackage{ascmac}
+
+\def\LEFTLINE{\vrule width 1pt}
+\def\RIGHTLINE{\vrule width 1pt}
+\def\VLINE{\vrule width 1pt}
+\def\HLINE{\noalign{\hrule height 1pt}}
+
+
+\newcounter{program}
+
+\newlength{\minipagetbllength}
+\newcounter{minipagetblcounter}
+\newcommand{\minipagetblfootnote}[1]{
+\footnote{#1}\addtocounter{minipagetblcounter}{-1}}
+\newcommand{\minipagetbl}[1]{
+\settowidth{\minipagetbllength}{#1}
+\setcounter{minipagetblcounter}{0}
+\begin{center}\begin{minipage}{\minipagetbllength}
+\renewcommand{\footnoterule}{}
+\begin{center} #1 \vspace{-.1in} \end{center}
+\end{minipage} \end{center}
+\addtocounter{footnote}{\value{minipagetblcounter}}
+}
+\title{情報通信工学演習II(計算機基礎)テキスト}
+\date{平成14年度版}
+\author{担当: 国島丈生、山内仁}
+\begin{document}
+
+\pagestyle{plain}
+\maketitle
+
+
+\renewcommand{\baselinestretch}{0.9}
+
+
+
+\chapter{本演習に関する概説}
+
+
+\section{まえがき}
+\suppressfloats[t]
+
+みなさんは、これまで情報通信工学演習などでUNIXワークステーションを使って
+こられたと思います。
+
+世間でコンピュータといいますと、ほとんどの場合、Windows PCであったり、
+(あるいは、一部の分野では) Macintoshであったりするわけですが、サーバ系で
+はUNIXが主流ですし、研究開発部門ではUNIX WSを使っている場合も多いです。
+また、最近PCにおける新たな技術基盤(OS)としてLinuxが注目を集めており、ひょっ
+とすると、みなさんが社会にでるころには、UNIXで組まれたオフィスシステムで
+仕事をする、などということもあるかもしれません。
+
+また、みなさんはコンピュータの箱(筐体)の中がどのようになっているか、見た
+ことがありますか?コンピュータのソフトウェアはCPUをはじめとするハードウェ
+ア上で動きますから、メモリ管理であったり、ディスクやバスなどの速度であっ
+たり、ソフトウェアの性能を向上させるためにときとしてハードウェアの知識が
+必要となることがあります。実際にどのようなハードウェアからコンピュータが
+構成されていて、どのように動いているか、一通り知っておくと、ソフトウェア
+を書くときでも役に立ちます。
+
+以上のような背景をふまえ、本実験では、UNIXの動くコンピュータを部品から組
+み立て、最終的にUNIXによる簡単な通信ネットワークを組むまでを課題とします。
+
+
+\section{概要}
+\suppressfloats[t]
+
+2〜3人程度のグループに分かれ、グループごとに以下のような実験をやってもら
+います。
+
+
+\begin{description}
+\item [計算機ハードウェア] PCを部品から組み立てることを通して、計
+	    算機ハードウェアの基本的な構成や役割について理解する。
+\item[UNIX環境] 先に組み立てたPCにUNIX(FreeBSD)を導入し、環境設定やフリーウェアの導入を行う。これによりUNIXに対する理解を深める。
+\item [ネットワーク] PCを同一LAN(Local Area Network)に接続し、WWWやメールなど、インターネットを構成する基盤技術について理解を深める。
+\item [UNIXの内部技術] オペレーティングシステム(OS)の基礎について、UNIXを題材として理解を深める。
+\end{description}
+
+
+\section{諸注意}
+\suppressfloats[t]
+
+
+\subsection{レポート}
+
+各章の最後に課題をつけてある。これらの課題について、各自で(一人ずつ)レポー
+トを提出してもらう。出席状況とレポートとによって成績点をつける。なお、特
+別な事情がない限り、一回でも欠席した場合は単位は認定しない。
+
+
+\begin{description}
+\item [様式] 用紙サイズA4。そのほかは自由。手書きも可。ただし手書きの場合は読みやすく丁寧に書くこと。
+\item [提出期限] 原則として、演習を行った翌週の火曜17:00とする。祝日等の場合は別途指示する。
+\end{description}
+
+レポート内容について他人と相談するのはかまわないが、\textbf{レポート自体
+は独力で書く}こと。他人のレポートを丸写しすることは認めない。丸写しした
+と思われるレポートが見つかった場合、こちらではどちらがオリジナルか判断で
+きないので、両者とも0点とする可能性がある。
+
+
+\subsection{実験に関する注意}
+
+PCの部品(マザーボード、CPU、ハードディスク、各種ボードなど)は精密部品が
+多いですので、取り扱いは慎重にしてください。1つ1万円程度はする部品が多い
+ので、部品の破損が多発した場合、(予算的に)部品の補充ができなくなることも
+あります。詳しい注意点は実験の時に述べます。
+
+また、第2週以降の実験では、これまでの演習等で学んだUNIXに関するさまざま
+な知識が必要になります。実験中も必要に応じて再確認したり、新規の事項を説
+明してきますが、これまでの演習のテキストや演習室に備え付けてある書籍など
+を用いて適宜確認を行ってください。
+
+
+\chapter{計算機ハードウェア}
+
+
+\section{準備}
+\suppressfloats[t]
+
+まず、以下の部品があることを確認してください。グループによって異なる部品
+を使う場合があるので、注意すること。
+
+
+\begin{description}
+\item [ケース(ATXミドルタワーまたはミニタワー)] 各グループ1個。電源ケーブル1本、コネクタ金具・ネジ類が付属しています。
+\item [ディスプレイ] 各グループ1台。電源ケーブル1本、接続用ケーブル1本が付属しています。
+\item [キーボード] 各グループ1枚。
+\item [マウス] 3ボタンタイプ。各グループ1個。
+\item [マザーボード] 各グループ1枚。
+\item [IDEケーブル] 1本
+\item [CPU] 各グループ1個。
+\item [メモリ] DIMM1枚。
+\item [グラフィックボード] 各グループ1枚。
+\item [イーサネットボード] 各グループ1枚。
+\item [ハードディスクドライヴ] 各グループ1台。
+\item [フロッピーディスクドライヴ] 各グループ1台。
+\item [CD-ROMドライヴ] 各グループ1台。
+\item [工具] プラスドライバ各グループ1本。
+\end{description}
+
+
+\section{組み立て手順}
+\suppressfloats[t]
+
+以下の手順は、この順で組み立てを行わなければならないわけではない。最終的
+にこれらのステップはすべて行えばよく、ケースの形状などによって、作業手順
+を変えた方がよい場合もある。
+
+また、組み立てる最中、ケースの縁などで手を切ることがよくある。そのため、
+軍手を装着して作業を行うことが望ましい。軍手がない場合は、手を切らないよ
+う、くれぐれも注意すること。
+
+
+\subsection{ケースの分解}
+
+ケース側面をスライドさせてはずす。はずし方はケースにより異なるが、ケース
+前面でもネジ止めされている場合もある。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/case3.eps}}
+\end{center}
+\end{figure}
+
+マザーボードを取り付ける金具をケースから外せる場合は、外しておいたほうが
+後の作業がやりやすい。
+
+
+\subsection{CPU・メモリの装着}
+
+マザーボードを取り出し、以下の作業を行う。
+
+CPUをマザーボードのCPUソケットにはめ込む。まずマザーボードのCPUソケット
+の横のレバーを充分上げておく。CPUソケット・CPUの双方とも一カ所だけ角が欠
+けているので、そこを合わせてはめこみ、横のレバーを下ろす。精密部品なので、
+足を折ったりしないよう、慎重に行うこと。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/pic00053.eps}}
+\end{center}
+\end{figure}
+
+CPUとCPUクーラ(冷却器)が別々になっている場合は、さらにCPUクーラを装着す
+る。CPUソケットの出っ張りにクーラの留め具をひっかけて固定する形状になっ
+ているので、まず片方の留め具を力を入れて押し、反対側の出っ張りにひっかけ
+る。このとき、手だけでは押し切れないほど固い場合は、ドライバなどで押すこ
+とになるが、マザーボードを傷つけないよう、充分注意すること。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/pic00055.eps}}
+\end{center}
+\end{figure}
+
+メモリ(DIMM)は、ソケットの両側のロックを外側に倒した状態で、切り欠きに合
+わせてメモリを装着する。その後、ソケットのロックをDIMMの切り欠きに入るま
+で押し込む。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/pic00056.eps}}
+\end{center}
+\end{figure}
+
+
+\subsection{マザーボードの設定}
+
+マザーボードは、取りつけるCPUの種類などによって、ディップスイッチやジャンパの設定を変更する必要がある場合がある。マザーボードのマニュアルを見ながら、ジャンパが正しく設定されているか確認する。とくにCPUの種類とあっているか確認すること。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/dipswitch.eps}}
+\end{center}
+\end{figure}
+
+
+\subsection{マザーボードの取り付け}
+
+マザーボード取り付け金具にマザーボードをねじ止めし、ケースに装着する。で
+きあがりの状態を想定し、位置や必要な部品を確認しながら作業をすすめること。
+
+マザーボードと取り付け金具の位置あわせを行い、どの部分をネジで固定するか、
+あらかじめ決めておく。加工の精度の問題で、多少うまく合わない場合があるの
+で、丁寧に位置あわせを行うようにすること。続いて、マザーボードを取り付け
+金具に固定する。ワッシャがケースの付属品にある場合は、ワッシャをはめるの
+を忘れないこと。また、精度の問題でうまくネジが止められないときは、無理に
+止めないこと。全部で4個所以上止まっていれば、充分固定できていると考えて
+よい。
+
+ケースへ装着する際、固定用金具の形状に注意し、必要なら新たに穴を開ける。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/pic00061.eps}}
+\end{center}
+\end{figure}
+
+
+\subsection{各種ボードの取り付け}
+
+マザーボードに、グラフィックボードとネットワークボードを取付ける。ネット
+ワークボードはすべてPCIスロット(白)を使用する。また、グラフィックボード
+はAGPスロット(マザーボード中央辺りの茶色のスロット)のものとPCIスロットの
+ものの2通りがある。
+
+そのスロットに合う位置の取り付け金具を外し、ボードをはめ込み、ケースにね
+じ止めする。スロットが固い場合があるが、基盤面そのものには手を触れないよ
+うに作業を行うこと。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/pic00062.eps}}
+\end{center}
+\end{figure}
+
+
+\subsection{FDD・HDD・CD-ROMドライヴの取付け}
+
+本体にフロッピーディスクドライヴ(FDD)、ハードディスクドライヴ(HDD)、
+CD-ROMドライヴを取りつける。
+
+HDDやFDDを装着する金具(3.5インチベイ)は、多くの場合ケースから取り外すこ
+とができる。外してからドライヴを装着したほうが作業がしやすい。ただし、
+FDDはケース前面との位置合わせが必要になる。ケースの前面パネルを取り付け
+た状態でドライヴを入れ、ネジ穴の位置決めをする。その後、ベイの両面からネ
+ジを締め、ドライヴを固定する。CD-ROMドライヴも同様に位置決めが必要になる
+が、横にガイド用金具を取りつけてからケース本体に固定する場合もある。この
+場合は位置決めは不要である。
+
+HDDは、基盤面を下側にする(ほこり防止のため)。
+
+なお、後述のように接続ケーブルの向きの指定が本体に書かれているので、それ
+を確認してから取り付けを行うこと。
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/pic00070.eps}}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[tbp]
+\begin{center}
+\resizebox{5.0cm}{!}{\includegraphics{images/pic00073.eps}}
+\end{center}
+\end{figure}
+
+
+\subsection{各種配線}
+
+配線すべきものは次のようなものがある。
+
+
+\begin{itemize}
+\item マザーボードの電源ケーブル
+\item CPUファンの電源ケーブル
+\item 本体前面の各種スイッチ・スピーカなどの配線(色のついているほうが+)
+\item HDD, FDD, CD-ROMドライヴなどの電源ケーブル
+\item HDD, FDD, CD-ROMドライヴなどとマザーボードとの接続ケーブル
+\end{itemize}
+
+マザーボードとの配線については場所や向きを間違えないよう、マニュアルを見
+ながら行うこと。また、HDD, FDD, CD-ROMドライヴなどとの配線も逆向きに差し
+がちである。次のような目安にしたがい、配線を間違えないようにすること。
+
+
+\begin{itemize}
+\item 本体の方に接続ケーブルの0番(赤い側)の場所が指定されているので、それに合わせて接続ケーブルをつなぐ。
+\item FDDの接続ケーブルは途中でねじれている方をFDD側に接続する。また、両端を使う(途中のコネクタはFDDを2台以上接続する際に使う)
+\item HDDはマザーボードのIDE1に、またCD-ROMドライヴはマザーボードのIDE2にそれぞれ接続。
+\end{itemize}
+
+
+\subsection{電源投入・BIOSの確認}
+
+ケースの側面を閉める前に、この状態で電源を入れ、正常に動作するか確認しておく。
+
+各種接続がうまくできているかもう一度確認した後、本体の電源ケーブル、ディスプレイとの接続ケーブル、ディスプレイの電源ケーブル、キーボード、マウスを接続し、電源を投入します。OS起動用フロッピーディスクを要求するメッセージが出れば、とりあえずは成功である。
+
+一般にPCの場合は、この段階でBIOS (Basic Input Output System)の設定確認を行う必要がある。BIOSは、PCの電源を投入したりリセットを行ったときの最初の起動、基本的な入出力機能、マザーボード等のハードウェアの基本設定を行うプログラムであり、この設定が間違っていると、ハードウェア的には正しく組み上がっていてもPCは動作しない。
+
+BIOSの設定画面への入り方はマザーボードによって異なる。今回使用するマザーボードでは、次の2通りがある。
+
+
+\begin{itemize}
+\item 画面に「PRESS DEL TO ENTER SETUP」というメッセージが表示されたときに\textbf{DEL}キーを押す
+\item 起動直後に表示されるメーカのロゴ画面表示中にF2キーを押す
+\end{itemize}
+
+BIOS設定画面にはさまざまなチェック項目があるが、CPUの種類・クロック数、HDDの接続先、起動順(FDDやCD-ROMを優先させるなど)などをチェックしておく必要がある。チェック項目は演習実施時に別途指示する。
+
+
+\begin{figure*}[bp]
+\begin{itembox}{コラム: IDE}
+今回使用しているHDDやCD-ROMドライヴはIDEという規格に基づいています。通常のマザーボードでは、IDEのデバイスを4つまで接続することができます(Primary, Secondary二系統にそれぞれMaster, Slaveがある)。Primary Masterに接続されているデバイスから最初に起動しようと試みますので、ここに通常HDDを接続します。
+
+HDDやCD-ROMドライヴの規格には、ほかにSCSIが有名です。
+
+\end{itembox}
+\end{figure*}
+
+
+\section*{課題}
+\suppressfloats[t]
+
+
+\begin{enumerate}
+\item 実験の過程で直面したトラブルについて、その症状、原因の究明過程、原因、解決方法などについて(自分で調べるなどして)記述せよ。
+\item マザーボード、グラフィックボード、ネットワークボード、ハードディスクドライヴ、フロッピーディスクドライヴ、CD-ROMドライヴについて、使用したものの型番を記せ。
+\item マザーボード、グラフィックボード、ネットワークボードについて、ICの配置がわかるように概略をスケッチせよ。また、主要なICについて、チップに印刷されている型番を記録せよ。
+\item CPU(中央演算処理装置)、メモリ(一次記憶)、ハードディスク(二次記憶)について、それぞれの役割、関連を調べよ。
+\end{enumerate}
+
+
+\chapter{UNIX環境構築}
+
+
+\section{まえがき}
+\suppressfloats[t]
+
+以前はUNIXというと、演習室にあるようなワークステーションでしか動作しない
+ものでした。ところが、最近、PCで動作するUNIX(PC-UNIXと呼ばれることがあり
+ます)が登場し、UNIXを取り巻く環境が大きく変わってきています。特に、Linux
+(http:{\slash}{\slash}www.linux.or.jp{\slash})は、一般ユーザや多くのソフ
+トウェアベンダーを巻き込んで大きなブームを巻き起こしています。
+
+今回の演習では、PC-UNIXの中からFreeBSD
+(http:{\slash}{\slash}www.jp.freebsd.org{\slash})というものを取り上げ、
+これをインストールすることでUNIX環境を構築することにします。FreeBSDは、
+Redhat, TurboLinux, Vine LinuxなどのLinuxに比べて以下のような特徴があり、
+今回の演習の目的に合っていると考えられます。今回の演習では、FreeBSD
+4.2-RELEASE\footnote{2002年11月現在の最新リリースは4.7-RELEASE。}を用いる
+こととします。
+
+
+\begin{itemize}
+\item カーネルと呼ばれるUNIXの中核部分、各種コマンドなどが、そのソース(C言語)を含めて統一的に管理されている。
+\item 余分なアプリケーションを入れずにインストールできる。
+\end{itemize}
+
+なお、本来、PC-UNIXをインストールするには、PCのハードウェアやUNIXに関す
+る知識がいろいろと必要になりますが、これを詳しく説明すると一冊の本が書け
+てしまいます。今回は、インストールに必要となる最低限の説明にとどめること
+にします。さらに詳しく知りたい人や自分でもインストールしてみたい人は、適
+宜書籍を参照してください。
+
+
+\begin{figure*}[bp]
+\begin{itembox}{2種類のUNIX}
+一口に「UNIX」といっても、Solaris(Sun Microsystems社、演習室のワークステー
+ションに搭載されている)、HP-UX(Hewlett Packard社)、IRIX(Silicon Graphics
+社)、Linux、FreeBSDなど、実際には多くの種類が存在します。そしてこれらは、
+カリフォルニア大学バークレイ校で開発が進められた「BSD」系列と、AT{\&}Tベ
+ル研究所で開発が進められた「System V」系列とに大きく分けることができます。
+SolarisはどちらかというとSystem V (System V Release 4)、FreeBSDはどちら
+かというとBSDに分類することができます。ただし、最近は、BSD系列とSystemV
+系列とで機能的な差はほとんど無くなってきており、その境界は曖昧になってき
+ています。
+\end{itembox}
+\end{figure*}
+
+
+\section{基礎知識}
+\suppressfloats[t]
+
+
+\subsection{オペレーティングシステム}
+
+オペレーティングシステム(Operating System, OS)は各種デバイスの制御のため
+の機能の提供、応用プログラムの実行制御など、計算機が実際に動作するために
+必要な基本機能を提供するソフトウェアである\footnote{詳細は「システムプロ
+グラム」の講義を参照。}。各種WindowsやLinux・UNIX, MacOSなどはすべてオペ
+レーティングシステムである。
+
+オペレーティングシステムが異なると実行制御の方法が異なるため、CPUが同じ
+であってもプログラムに互換性はない。例えば、WindowsのMicrosoft Officeが
+Linux上で動作しないのは、対象としているオペレーティングシステムが異なる
+ためである。
+
+
+\subsection{複数オペレーティングシステムの共存}
+
+PCアーキテクチャでは、ディスク上に区画(スライス\footnote{FreeBSDでの用語。
+一般にはパーティションと呼ばれることが多い。}, slice)を作成し、区画内に
+オペレーティングシステムを導入する方式を採用している。一つのディスクには
+複数の区画が作成できるため、複数のオペレーティングシステムを一つのディス
+ク上に共存させ、ブートマネジャ\footnote{FreeBSDでの用語。}と呼ばれるソフ
+トウェアを利用して起動時に切り替えて使用することが可能となっている。
+
+
+\subsection{UNIX}
+
+UNIXにはさまざまな種類があるが、その実行制御方法は似かよっている。Linux
+も、実行制御という点からみればUNIXの一種と言える。
+
+UNIXは、同時に複数のプログラムが動作することのできるOS(マルチタスクOS)で
+あり、その構成は次のようになっている。
+
+
+\begin{itemize}
+\item カーネル(kernel):複数プログラムの実行制御、デバイス制御を行う。
+\item 各種常駐プログラム(デーモン, daemon)、ライブラリなどの基本部分
+\item 応用プログラム。EmacsやNetscapeなどはこれに相当する。
+\end{itemize}
+
+また、UNIXではパーティション内をさらに複数の区分(パーティション
+\footnote{FreeBSDでの用語。他のUNIXでは異なる用語を用いることがある。},
+partition)に分割し、区分ごとに用途を変えることがある。
+
+
+\section{準備}
+\suppressfloats[t]
+
+今回の演習では必要ありませんが、通常は以下のようなことをあらかじめ準備し
+ておく必要があります。
+
+
+\subsection{使用するデバイスの整理・情報収集}
+
+現状のPC-UNIXでは、安定動作するハードウェアデバイスの種類がWindowsよりも少ない。また、動作する場合でもOSの初期値ではうまく動作せず、使用条件に応じてパラメータを調整する必要があることもある。
+
+あらかじめWWW等で、インストールしようと思っているPC-UNIXでサポートされているデバイスを調査し、それに基づいてPCの機種を選んだり部品をそろえたりしなければならない。今回は、あらかじめ、FreeBSDで動作する部品ばかりをそろえてある。
+
+
+\subsection{インストールメディア}
+
+OSのインストールCD-ROMやブートフロッピーディスクを適宜用意する必要があります。FreeBSDでも、CD-ROMから起動してインストールを行うことができますが、現状ではこの場合、英語でインストールメニューが出ます。そのため、今回は、フロッピーディスクから日本語版インストーラを起動し、配布するCD-Rからファイルをコピーするという方法をとります。
+
+
+\subsection{確認}
+
+BIOSで、フロッピードライヴ(A)からの起動になっていることを確認。また、イーサネットケーブルがPCに接続されていることを確認しておく。
+
+
+\section{インストール手順}
+\suppressfloats[t]
+
+
+\subsection{概要}
+
+
+\begin{enumerate}
+\item ブートフロッピーディスクから起動
+\item 必要なら各種ハードウェアのパラメータ設定(今回は必要なし)
+\item 区画(slice)の作成
+\item 区画内の区分(partition)の作成
+\item インストールする配布物の選択
+\item インストール
+\item インストール後の設定
+\end{enumerate}
+
+FreeBSDでは、3.より後の作業はsysinstallと呼ばれるプログラムから行う。
+
+
+\subsection{ブートフロッピーディスクからの起動}
+
+FreeBSD 4.2-RELEASEのブートフロッピーディスクはkern.flp, mfsroot.flpの2枚から成っています。
+
+
+\begin{enumerate}
+\item kern.flpをフロッピーディスクドライヴに挿入してPCを起動
+\item 画面の指示にしたがってフロッピーディスクをmfsroot.flpに入れ替える
+\item 配布したCD-RをCD-ROMドライヴにセット
+\end{enumerate}
+
+こののち、インストール用のFreeBSDカーネルが起動し、インストーラが立ち上がります。
+
+
+\subsection{各種ハードウェアのパラメータ設定: Kernel Configuration Menu}
+
+ハードウェアのデバイス情報(IRQ, I{\slash}Oポートアドレスなど)を編集する画面。これを用いることで、標準で立ち上がるインストール用カーネルの設定情報を変更し、標準状態では正しく動作しないハードウェアでもインストールに用いることができます。
+
+今回は特に設定する必要はありませんので、\textbf{↓}キーを用いて「Skip kernel configuration and continue with installation」へカーソルを持っていき、\textbf{Enter}キーを押します。ここからはGUI (Graphical User Interface)ベースのインストーラ(sysinstall)が起動します。
+
+
+\subsection{sysinstall}
+
+sysinstallでは、画面に出てくる指示にしたがってインストールを進める。やや操作方法が独特で間違えやすいので、以下の点に注意して操作すること。
+
+
+\begin{itemize}
+\item 項目を移動→項目の選択→OKかキャンセルかを選択→実行という流れになる。
+\item 場合によっては、Exit項目を選択して上位メニューに戻らなければならないこともある。
+\item 項目間の移動は矢印キーまたはタブキー
+\item 項目の\textbf{選択}が\textbf{SPACE}キー。サブメニューに入る場合と、{[}X{]}マークがついて選択される場合がある。
+\item OKかキャンセルかの選択は\textbf{TAB}キー
+\item 項目の\textbf{実行}が\textbf{ENTER}キー(OK,キャンセルとも)
+\end{itemize}
+
+
+\subsubsection{Localization Menu}
+
+インストーラの用いる言語の選択。英語、日本語、韓国語、ロシア語、中国語が使用できる。以下の説明は「日本語」を選択したとして仮定している。
+
+
+\subsubsection{メインメニュー}
+
+一連のインストール作業は"Standard" (標準インストール)で行うことができる。また、インストールオプションの選択、インストール後の設定などに入ることができる。
+
+
+\subsubsection{スライスの設定: FDISKパーティションエディタ}
+
+スライスの作成を行う。今回はFreeBSDしかインストールしないので、「ディスク全体を使用(A)」を実行した後、「終了(Q)」を実行。「本来のパーティションテーブル」は保持しておくようにする。
+
+
+\subsubsection{ブートマネージャのインストール}
+
+OSの起動切り替えを行うプログラムのインストールなど。今回は切り替えの必要がないので"Standard"を選択。
+
+
+\subsubsection{FreeBSDディスクラベルエディタ}
+
+FreeBSD用の区画(slice)の中をさらにいくつかの区分(partition)に分割することができる。今回は「全てをデフォルトに設定(A)」を実行した後、「終了(Q)」を実行する。
+
+
+\subsubsection{配布ファイルの選択}
+
+インストールするファイル群の指定。あとの演習で必要となるので、以下のようにする。
+
+
+\begin{itemize}
+\item "X-Developer" (全ソース、バイナリ、X Window System)を選択。
+\item portsコレクション……インストール
+\item XFree86配布物……以下のもの(デフォルト値がこうなっているはずである)
+\begin{itemize}
+\item Basic(基本コンポーネント)……bin, cfg, lib, man, prog, set
+\item Server(Xサーバ)……SVGA, VGA16, Mach64
+\item Fonts(フォント)……fnts, non
+\end{itemize}
+\end{itemize}
+
+
+\subsubsection{インストールメディア}
+
+インストールする配布物をどこから取得するかを指定。CD-ROMのほか、ネットワーク経由で取得することも可能になっている。今回は"CDROM"を選択。
+
+このあと確認のメッセージが出たあと、インストール作業が始まる。ここまでの作業に間違いがなければ約15分程度かかる。時間が短すぎる場合はどこかに間違いのあった可能性がある。
+
+
+\section{インストール後の設定}
+\suppressfloats[t]
+
+インストールが終了した後、インストール後の設定を行う。下記の項目以外については、表\ref{doc4:setting}を参照のこと。
+
+
+\begin{description}
+\item [イーサネット] ネットワークインタフェースとして"fxp0" (Intel EtherExpress Pro{\slash}100B ethernet device driver)を選択した後、表\ref{doc4:ether_setting}のように設定する。そのあと、インタフェースを有効化する。
+\item [コンソール機能のカスタマイズ] Yes。キーボードマップのみ設定。「システムコンソールキーマップ」メニューに入り、日本語キーボードの場合は"Japanese 106"とする。英語キーボードの場合は何も設定せずCancel。
+\item [タイムゾーンの設定] Yes。CMOSクロックはUTC(世界標準時)に\textbf{合わせず}に使用。その後、タイムゾーンを"Japan"(省略形JST)に設定。
+\item [マウスの設定] USB以外のマウスが接続されている。マウスの種類…"Auto" (自動選択)、マウスポート……PS{\slash}2、追加フラグ…なし
+\item [システム管理者(root)のパスワード] 本来は厳重に管理すべきものですが、今回は実験の都合上、ホスト名と同じものにしておいてください。
+\end{description}
+
+
+\begin{table}[htbp]
+\begin{center}
+\caption{インストール後の設定}
+\label{doc4:setting}
+
+\minipagetbl{
+\begin{tabular}{@{\LEFTLINE}l|l@{\RIGHTLINE}}\HLINE 
+\hfill \bfseries{項目名} \hfill\null & \hfill \bfseries{設定内容} \hfill\null \\ \HLINE 
+末端のホストか & Yes \\ \hline 
+FTPアクセス & 通常ユーザのみ許可 \\ \hline 
+NFSサーバ & No \\ \hline 
+NFSクライアント & No \\ \hline 
+セキュリティレベルの設定 & No (mediumレベルに設定) \\ \hline 
+Linuxバイナリ互換機能 & No \\ \hline 
+Xサーバの設定 & No(あとで行う) \\ \hline 
+パッケージコレクション & No (あとで行う) \\ \hline 
+ユーザアカウントの設定 & No (あとで行う) \\ \HLINE 
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+\begin{table}[htbp]
+\begin{center}
+\caption{イーサネットオプションの設定一覧}
+\label{doc4:ether_setting}
+
+\minipagetbl{
+\begin{tabular}{@{\LEFTLINE}l|l@{\RIGHTLINE}}\HLINE 
+\hfill \bfseries{項目名} \hfill\null & \hfill \bfseries{値} \hfill\null \\ \HLINE 
+IPv6 & 使用しない \\ \hline 
+DHCP & 使用しない \\ \hline 
+ホスト名 & 演習時に指示 \\ \hline 
+ドメイン名 & c.oka-pu.ac.jp \\ \hline 
+IPv4ゲートウェイ & 163.225.216.254 \\ \hline 
+ネームサーバ & 163.225.215.252 \\ \hline 
+IPv4アドレス & 演習時に指示 \\ \hline 
+ネットマスク & 255.255.255.0(自動設定される) \\ \hline 
+ifconfigへの特別なオプション & なし \\ \HLINE 
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+このあと総合設定メニューに移動し、"Cancel"を実行してメインメニューに戻る。これでインストール作業は終了なので、画面の指示に従い、PCを再起動する。CD-ROMを取り出すのは、再起動が始まってからにすること。
+
+このあと起動中に、各種デバイスが認識された旨のメッセージが出力されるので、よく見ておくこと。これらのメッセージの多くは、"dmesg"というコマンドによって表示させることができる。次のような表示が出れば、インストールは成功である。
+
+
+\bigskip
+
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+Wed Oct  6 09:46:52 JST 1999
+
+FreeBSD/i386 (comx200.c.oka-pu.ac.jp) (ttyv0)
+
+login:
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+
+\section{起動後の設定}
+\suppressfloats[t]
+
+
+\subsection{ログイン}
+
+管理用アカウント(root)でログインしてみます。Xウインドウもまだ使えませんし、mule(emacs)やnetscapeなども当然まだ動作しませんが、ls, cd, pwdなどの基本的なUNIXコマンドは動作しますので、いろいろ探検してみてください。たとえば、{\slash}usr{\slash}srcには、今動いているFreeBSD自体のソースファイル(C言語で書かれています)が一式置いてあります。
+
+
+\subsection{留意点}
+
+ついで、インストール時に行わなかった追加の設定をいくつか行う。ここでは、インストール時に用いたGUIプログラムsysinstall ({\slash}stand{\slash}sysinstall)を用いるが、以下の点に留意すること。
+
+
+\begin{itemize}
+\item sysinstallはシステム管理者権限で実行すること。
+\item 日本語メニューを使用してからsysinstallを終了すると、キーボードからの入力が端末に出力されない状態におちいることがある。これはsysinstallのバグであり、"stty sane"というコマンドを実行すると復旧する。
+\end{itemize}
+
+
+\begin{figure*}[bp]
+\begin{itembox}{UNIXのユーザ管理}
+UNIXでは、ユーザ、ユーザの集合である「グループ」の2つでユーザを管理している。それぞれ便宜上名前になっているが、システム的にはUID(ユーザID)、GID(グループID)という数字で管理が行われている。ファイルやディレクトリに対するパーミッション(アクセス権管理)は、「持ち主のユーザ」「持ち主の属する(ある)グループ」「それ以外のユーザ」の3レベルに分けて管理される。たとえば、"chmod 755 foo.sh"というUNIXコマンドを実行すると、「持ち主のユーザ」はrwx(2進法で7、読み出し・書き込み・実行可能)、「持ち主の属する(ある)グループ」はr-x (2進法で5、読み出し・実行可能だが書き込み不可)、「それ以外のユーザ」はr-xというようにアクセス権が設定される。
+
+なお、UNIXではシステム管理者アカウントはrootという名前になっている。たいていのシステムファイルはシステム管理者の権限でなければ変更することはできないが、システム管理者の権限を得るには次の2通りの方法がある。
+
+
+\begin{itemize}
+\item アカウントrootでログインする。
+\item 一般ユーザでログインしている状態でsuコマンドを実行する。
+\end{itemize}
+
+\end{itembox}
+\end{figure*}
+
+
+\subsection{ユーザアカウント作成}
+
+システム管理者アカウント"root"というユーザは強力な権限を持ち、システムを破壊してしまうことも可能である。したがって、必要のあるとき以外極力使わないようにすることが望ましい。普段は「一般ユーザ」と呼ばれる、より権限の弱いユーザで作業を行い、必要になったらrootの権限を取得する\footnote{このためのUNIXコマンドが"su"である。}のが、UNIXでの一般的な管理方法である。
+
+そこで、まず一般ユーザのアカウントを作成する。
+
+
+\begin{enumerate}
+\item sysinstallを起動し、"Configure"を選択。ついで設定メニューで"User Management"を選択。
+\item 「ユーザグループをシステムに追加する」を選択。
+\item ユーザグループ: users,グループID: 1001を入力し、「OK」を実行。「グループメンバ」は空欄でよい。
+\item 「ユーザをシステムに追加する」を選択。
+\item ログインID: user???、UID: 1??? (???は各ホスト名の下3桁の数字と同じ)、グループ: users、ログインシェル: {\slash}bin{\slash}csh。パスワードはグループごとに決める。ほかはそのままでよい。
+\item 「Exit」を選択し、「FreeBSD設定メニュー」に移動。
+\item 「Exit」を選択し、「{\slash}stand{\slash}sysinstallメインメニュー」に移動。
+\item 「導入終了」を選択。
+\end{enumerate}
+
+このあと、作成した一般ユーザで実際にログインできるようになったことを確かめ、さらにシステム管理者権限で{\slash}etc{\slash}groupというファイルを編集する。具体的には、"wheel:*:0:root"と書かれた行の最後に"user???"を追加する。たとえば、user201を追加した後の状態は次のようになる。
+
+
+\bigskip
+
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+wheel:*:0:root,user201
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+
+\subsection{hostsファイルの設定など}
+
+以降の実験でほかのホストにアクセスしたり、適宜スーパユーザの権限で作業したりする必要があるので、そのための設定をしておく。
+
+システム管理者権限で{\slash}etc{\slash}hostsを編集し、次の内容を末尾に付け加える。すでに書かれている行は書かなくてよい\footnote{ここまでの作業が正しくできていれば、自分の班のホスト名はすでに書かれているはずである。}。
+
+
+\bigskip
+
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+163.225.216.200        comx200.c.oka-pu.ac.jp comx200
+163.225.216.201        comx201.c.oka-pu.ac.jp comx201
+163.225.216.202        comx202.c.oka-pu.ac.jp comx202
+163.225.216.203        comx203.c.oka-pu.ac.jp comx203
+163.225.216.204        comx204.c.oka-pu.ac.jp comx204
+163.225.216.205        comx205.c.oka-pu.ac.jp comx205
+163.225.216.206        comx206.c.oka-pu.ac.jp comx206
+163.225.216.207        comx207.c.oka-pu.ac.jp comx207
+163.225.216.208        comx208.c.oka-pu.ac.jp comx208
+163.225.216.209        comx209.c.oka-pu.ac.jp comx209
+163.225.216.210        comx210.c.oka-pu.ac.jp comx210
+163.225.216.211        comx211.c.oka-pu.ac.jp comx211
+163.225.216.212        comx212.c.oka-pu.ac.jp comx212
+163.225.216.213        comx213.c.oka-pu.ac.jp comx213
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+
+\begin{figure*}[bp]
+\begin{itembox}{vi簡易マニュアル}
+
+\begin{itemize}
+\item h, j, k, l……カーソルをそれぞれ左、下、上、右へ移動
+\item i文字列ESC……文字列をカーソル位置から挿入
+\item a文字列ESC……文字列をカーソル位置の1文字後ろから挿入
+\item o文字列ESC……文字列をカーソル位置の次の行に挿入
+\item x……カーソル位置の文字を1文字消去
+\item :w!……強制書き込み(セーヴ)
+\item ZZ……セーヴ後終了
+\item :q!……セーヴしないで終了
+\end{itemize}
+
+\end{itembox}
+\end{figure*}
+
+
+\begin{figure*}[bp]
+\begin{itembox}{ホスト名とIPアドレス}
+インターネットに接続されているすべての計算機は、全世界で一意に決まる番号(IPアドレス)と、ホスト名とを持っている。たとえば、情報通信工学科のメールサーバのIPアドレスは163.225.215.253、ホスト名はcom-server1.c.oka-pu.ac.jpである。{\slash}etc{\slash}hostsは、ホスト名とIPアドレスの対応表である。また、{\slash}etc{\slash}hostsに書かれていないホストのIPアドレス等の情報を取得するサービスがDNS(Domain Name Service)であり、そのサービスを提供するサーバを俗に「ネームサーバ」と呼ぶ。
+
+\end{itembox}
+\end{figure*}
+
+
+\subsection{パッケージ}
+
+次週以降の演習で用いるプログラム類をインストールしておく。なお、ここでは「パッケージ」と呼ばれる、コンパイル済みのプログラム・設定ファイル一式をインストールする。一般には、これらのプログラムはC言語などで書かれたファイル(ソースファイル)で配布されているので、これを自分でコンパイルしなければならない。
+
+
+\begin{enumerate}
+\item CDROMをセットした後、{\slash}stand{\slash}sysinstallを起動して、"Configure"を選択。
+\item 設定メニューで"Packages"を選択。
+\item 配布先として"CDROM"を選択。
+\item japaneseカテゴリの以下のパッケージを選択: ja-kterm-6.2.0, ja-netscape-communicator-4.76
+\item パッケージ選択メニューに戻り、"Install"を実行。
+\end{enumerate}
+
+
+\subsection{XFree86の設定}
+
+普段みなさんがなにげなく使っているXウインドウシステムだが、LinuxやFreeBSDをインストールする場合、最大の関門がXウインドウシステムの設定である。それは以下の理由による。
+
+
+\begin{itemize}
+\item PCの場合グラフィックボードが多種多様で、それぞれによってXサーバが異なる。
+\item Xサーバを選択するだけでなく、グラフィックボードごとに適切なパラメータを与えて設定を行う必要があるが、この際、グラフィックボードのハードウェアに対する深い知識が必要になる。
+\item 極端に間違った設定を行うと、特にノートPCや液晶ディスプレイでは、ハードウェアを壊しかねない。
+\end{itemize}
+
+今回は、この部分はあらかじめ作成した設定ファイルを取得してもらうこととした。anonymous ftpでXF86Config.101 (英語キーボードの場合)またはXF86Config.106 (日本語キーボードの場合)というファイルを取得し(場所は別途指示する)た後、rootでログインして以下の手順を行う。
+
+
+\bigskip
+
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+ 取得したファイルを /etc/XF86Config にコピーする。たとえば:
+ # cp XF86Config.101 /etc/XF86Config
+ その後、次の作業を行う。
+ # cd /usr/X11R6/bin
+ # ln -s XF86_Mach64 X
+ # rehash
+ # startx
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+これでXウィンドウが立ち上がれば成功である。
+
+
+\begin{figure*}[bp]
+\begin{itembox}{anonymous ftp(匿名ftp)}
+ftpというコマンドは、ftpをかける側の計算機にもユーザアカウントを持っていないと実行できない。これでは、フリーウェアなどをインターネットで公開する場合、ユーザアカウントの管理がたいへんである。そこで、anonymousというユーザ名でだれでもftpができるようにしている場合がある。この場合、パスワードは自分のメールアドレスを入力することがマナーになっている。WWWブラウザで、"ftp:{\slash}{\slash}..."というURLにアクセスすることがあるが、これは上記のanonymous ftpの処理をブラウザを通して行っているのである。
+
+anonymous ftpは次のような手順で行う。\textbf{psi.c.oka-pu.ac.jp というホストに 
+ anonymous ftp を行っている例}を示す。なお、一般ユーザで書いているが、rootで行ってもかまわない。
+
+
+\bigskip
+
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+ % ftp psi.c.oka-pu.ac.jp
+ Connected to psi.c.oka-pu.ac.jp.
+ ...
+ Name (psi.c.oka-pu.ac.jp:user201): anonymous
+ ...
+ Password: (自分のメールアドレス)
+ ...
+ ftp> cd ディレクトリ
+ ...
+ ftp> get 取得したいファイル名
+ ...
+ ftp> quit
+ ...
+ %
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+途中で出力されるメッセージを良くみて、正しくファイルが取得できたことを確認しておくこと。とくに、ftpを実行したディレクトリに書き込み権限がないと、ファイルを取得できない。
+
+\end{itembox}
+\end{figure*}
+
+最近のバージョンのXFree86ではセキュリティが強化されており、このままの状態では一般ユーザでstartxが実行できない。この解決策はいくつかあるが、ここではXDM (X Display Manager)を使った方法を示す。startxが実行できることが確認できたら、以下の作業を行う。
+
+
+\bigskip
+
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+ファイル /etc/ttys を編集。途中に次のような行があるので
+
+ttyv8   "/usr/X11R6/bin/xdm -nodaemon"  xterm   off secure
+
+これを
+
+ttyv8   "/usr/X11R6/bin/xdm -nodaemon"  xterm   on  secure
+
+と書き換える。その後、再起動を行う。
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+時間的余裕のある班は、教官もしくはTAの立ち会いのもと、自分たちでXF86Configを作成してもよい。将来PC-UNIXに自分で触れたいと思っている人は、なるべくXF86Configを自分で作成する作業をやっておいた方が望ましい。
+
+
+\subsection{emacsのインストール}
+
+emacsはふだん頻繁に用いているツールであるが、OSに標準で含まれているプログラムではない\footnote{多くのLinuxディストリビューションやMacOS Xなど、標準で含まれているUNIXも増えてきている。}。後の作業のためにemacsをインストールし、システム管理作業の一端を体験する。
+
+
+\subsubsection{手順}
+
+anonymous ftpを用いてcomx200.c.oka-pu.ac.jp:{\slash}pubからmake-3.79.1.tar.gz, emacs-20.7.tar.gzというファイルを取得した後、以下の作業を行う。
+
+Emacsのコンパイル作業にはGNU make (gmake)が必要である。そのため、まずgmakeをコンパイル・インストールしてからEmacsのコンパイル・インストールを行う。
+
+
+\bigskip
+
+リスト\refstepcounter{program}
+\theprogram : GNU makeのインストール
+\label{doc4:965}
+\smallskip
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+% gzcat make-3.79.1.tar.gz | tar xvf -
+  (この作業を行うと make-3.79.1 というディレクトリが作られる)
+% cd make-3.79.1
+% ./configure --program-prefix=g
+% make
+% su
+# make install
+# exit
+% rehash
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+
+\bigskip
+
+リスト\refstepcounter{program}
+\theprogram : emacs のインストール
+\label{doc4:968}
+\smallskip
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+% gzcat emacs-20.7.tar.gz | tar xvf -
+  (この作業を行うと、emacs-20.7 というディレクトリが作られる)
+% cd emacs-20.7
+% ./configure
+% gmake
+% su
+# gmake install
+# exit
+% rehash
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+この作業を終えるとemacsが使えるようになる。
+
+
+\begin{figure*}[bp]
+\begin{itembox}{GNU make}
+gmake (GNU make)はFree Software Foundationで作られたmakeコマンドであり、Solarisに標準で付属しているmakeよりもひじょうに多くの機能を持つ。また、UNIXであればたいていコンパイルすることができるので、GNU makeの使用を前提にすればOSを気にすることなくMakefileを記述することができる。そのため、Emacsやtcshなど、最近のフリーウェアのmakeはGNU makeを使うことを前提としていることが多い。
+
+\end{itembox}
+\end{figure*}
+
+
+\begin{figure*}[bp]
+\begin{itembox}{configureとxmkmf}
+UNIXにもさまざまな種類があり、それぞれでヘッダやライブラリなどが微妙に異なっている。したがって、どのUNIXでも動作するプログラムを書くのは、プログラムの規模が大きくなるにつれ、難しくなる。
+
+このような汎用的なプログラムを書くための支援ツールとしてよく知られているのがGNU configureとxmkmfである。これらはいずれもOSに用意されているライブラリなどを動的にチェックし、環境に適したコンパイラオプションやヘッダファイルを生成してくれるコマンドである。
+
+\end{itembox}
+\end{figure*}
+
+
+\subsection{UNIXの停止方法・再起動の方法}
+
+緊急の事態を除き、PCの電源を落とす場合はUNIXシステムに悪影響を与えないような手順を踏む必要があります。
+
+電源停止の場合は次の手順をシステム管理者権限で実行してください。
+
+
+\begin{enumerate}
+\item shutdown -h nowというUNIXコマンドを実行する。
+\item 「電源を落としても良い」旨のメッセージ(英語)が出力されたら、電源を切る。コンセントを引き抜くなどの手荒なことはしないこと。また、メッセージが出力された段階でキーボードのキーを押してしまうとPCが再起動するので、注意すること。
+
+なお、今回実験に用いたPCによっては電源ボタンを押すだけでは電源の切れないものがある。この場合は、キーボードのキーを適当に押し、再起動が始まった瞬間に電源ボタンを押すとよいようである。
+\item 電源を切った後、必要に応じてディスプレイの電源を切る。
+\end{enumerate}
+
+
+\section*{課題}
+\suppressfloats[t]
+
+
+\begin{enumerate}
+\item 実験の過程で直面したトラブルについて、その症状、原因の究明過程、原因、解決方法などについて(自分で調べるなどして)記述せよ。
+\item PCの起動時に表示されたメッセージをdmesgコマンドを使って確認し、それらをレポートに添付しなさい。その中で自分達が使った部品がどこに表示されているか、わかる範囲で明記しなさい。
+\item ディスク領域を複数のスライスに分割することのメリット・デメリット、および一つのスライスを複数のパーティションに分割することのメリット・デメリットを考察しなさい。
+\item OSはどのようにして起動されるのか、ハードウェアに電源が入ってからの過程を調べて書け。
+\end{enumerate}
+
+
+\chapter{LAN}
+
+
+\section{WWW}
+\suppressfloats[t]
+
+
+\subsection{WWWの仕組み}
+
+WWW(World Wide Web)はサーバ・クライアント型のシステムであり、「WWWサーバ」と「WWWクライアント」との通信によって動作している。
+
+WWWクライアントは、いわゆるWWWブラウザである。一方、WWWサーバはコンテンツ(ホームページのソースファイルや画像など)を保持し、WWWクライアントからの要求に応じてコンテンツを送信する。この送受信のプロトコル\footnote{データのやり取りの方式や手順に関する規約。}がHTTP(HyperText Transfer Protocol)と呼ばれるものである\footnote{URLの先頭の"http:"は、HTTPでコンテンツの送信を行うという意味である。}。WWWクライアントで受信されたコンテンツは、WWWクライアント側で整形され画面に表示される。
+
+WWWサーバとWWWクライアントの通信の様子を見てもらうため、各PCにWWWサーバとWWWクライアントをインストールし、実際にネットワークを介してアクセスしてもらう。
+
+
+\subsection{必要な設定の確認}
+
+この章の課題を行うには、これまでの課題・設定が正しく行えている必要がある。次の点に注意しておくこと。
+
+
+\begin{itemize}
+\item netscapeが導入できていない……第2回の「FreeBSDのインストール」の際にXFree86のパッケージがうまくインストールできておらず、netscapeパッケージの導入に失敗した可能性が高い。配布したCD-ROMをセットし、XFree86を正しく導入した後、{\slash}stand{\slash}sysinstallを用いてnetscapeを導入する。
+\item {\slash}usr{\slash}portsがない、もしくはその下に何もない……上と同じく、OSのインストール時に選択を誤っている。同じく、{\slash}stand{\slash}sysinstallを用いてportsを導入する。
+\item {\slash}etc{\slash}hostsの設定……OSのパッケージを追加インストールした場合、選択を誤ったなどの理由で{\slash}etc{\slash}の下のファイルが上書きされている場合がある。特に{\slash}etc{\slash}hostsに自班・他班のホスト名がすべて書かれている必要がある。
+\end{itemize}
+
+
+\subsection{テキスト型WWWブラウザ w3m}
+
+最近のUNIX環境では、使いやすさ、バージョンアップのしやすさなどを考慮して、パッケージ管理ツールが用意されていることが多い。Linuxのrpmやapt (Debian)、FreeBSDなどのports、Solarisのpkg{\_}infoなどがその例である。パッケージ管理ツールでは、おおむね次のような機能が提供されている。
+
+
+\begin{itemize}
+\item どのファイルがどのパッケージに属するものかを記録
+\item ファイルの一括追加・削除
+\item インストール時の設定の支援機能
+\item パッケージのバージョンアップ
+\end{itemize}
+
+ここでは、FreeBSDで提供されているportsというパッケージ作成・管理支援ツールを用い、w3mというテキストベースのWWWブラウザをインストールする。
+
+comx200:{\slash}pubからw3m-0.1.11-pre.tar.gz, w3m-0.1.11-pre-kokb17.patch.gz, gc5.0alpha4.tar.gzを取得し、{\slash}usr{\slash}ports{\slash}distfiles{\slash}に置く。{\slash}usr{\slash}ports以下に何もファイルがない場合は、第2回目のOSのインストールに失敗しているので、{\slash}stand{\slash}sysinstallを用いてportsを追加インストールする。
+
+
+\bigskip
+\begin{figure}[htbp]
+\begin{screen}
+\begin{verbatim}
+% su -
+# cd /usr/ports/japanese/w3m
+# make install
+# exit
+% 
+\end{verbatim}
+\end{screen}
+\caption{w3mのインストール}
+\label{doc5:1069}
+
+\end{figure}
+\bigskip
+
+このあと、課題1を行う。
+
+
+\begin{figure*}[bp]
+\begin{itembox}{ports}
+w3mのインストールにおいて、"make install"としただけでアプリケーションがインストールされたことに注意されたい。FreeBSDのportsは、makeを用いてアプリケーションのソースファイルの取得、展開、configure等のコマンドの実行、コンパイルなどを自動で制御している。
+
+\end{itembox}
+\end{figure*}
+
+
+\subsection{WWWサーバ〜apache}
+
+ついでWWWサーバをインストールする。今回は、フリーウェアのWWWサーバでもっとも有名なApache (http:{\slash}{\slash}www.apache.org{\slash})というソフトウェアを使うことにする。これもportsでインストールを行う。comx200:{\slash}pubからapache-1.3.??.tar.gzというファイルを取得し、{\slash}usr{\slash}ports{\slash}distfiles{\slash}に置く。そののち、図\ref{doc5:apache_installation}に示す手順でインストールを行う。
+
+
+\bigskip
+\begin{figure}[htbp]
+\begin{screen}
+\begin{verbatim}
+# cd /usr/ports/www/apache13
+# make install
+# cd /usr/local/etc/apache
+# cp access.conf.default access.conf (もし access.conf がなければ)
+# cp httpd.conf.default httpd.conf (もし httpd.conf がなければ)
+# cp magic.default magic (もし magic がなければ)
+# cp mime.types.default mime.types (もし mime.types がなければ)
+# cp srm.conf.default srm.conf (もし srm.conf がなければ)
+# /usr/local/etc/rc.d/apache.sh start
+\end{verbatim}
+\end{screen}
+\caption{apacheのインストール}
+\label{doc5:apache_installation}
+
+\end{figure}
+\bigskip
+
+netscapeでhttp:{\slash}{\slash}comx2??{\slash}にアクセスし、インディアンの羽根の絵のついたページが表示されれば成功である。
+
+
+\subsection{ホームページを立ち上げる}
+\label{doc5:myhomepage}
+
+一般ユーザ(user2??)でログインし、実際にホームページを作成する。
+
+
+\begin{enumerate}
+\item ホームディレクトリにpublic{\_}htmlというディレクトリを作る。
+\item その下にindex.htmlというHTMLファイルを置く。HTMLファイルの記述方法はコラム「HTML」を参照のこと。
+\item netscapeでhttp:{\slash}{\slash}comx2??{\slash}{\~{}}user2??{\slash}index.htmlにアクセスしてみる。
+\item 他班のページにもアクセスしてみる。
+\end{enumerate}
+
+こののち、課題2、課題3を行う。
+
+
+\begin{figure*}[bp]
+\begin{itembox}{HTML}
+HTML(HyperText Markup Language)はWWWのコンテンツを記述するためのもっとも標準的なマークアップ言語である。細かい文法は国際規格によって定められているが、おおむね次のように記述する。
+
+
+\bigskip
+
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+<html>
+  <head>
+    <title>ここにタイトルを書く</title>
+  </head>
+  <body>
+    <h1>大見出し</h1>
+    <p>本文はここに書く。</p>
+    <ul>
+      <li>LaTeXのitemize環境に相当する書き方</li>
+    </ul>
+    <ol>
+      <li>LaTeXのenumerate環境に相当する書き方</li>
+    </ol>
+  </body>
+</html>
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+\end{itembox}
+\end{figure*}
+
+
+\section{インターネットプロトコルの仕組み}
+\label{doc5:telnet}
+\suppressfloats[t]
+
+HTTPはTCP{\slash}IP (Transmission Control Protocol{\slash}Internet Protocol)と呼ばれるインターネット標準プロトコルの上に構成された通信プロトコルであり、そのやり取りの様子をtelnetというTCP{\slash}IPのための汎用通信コマンドで手動で模倣することができる。HTTPの場合は、"GET"というコマンドを用いてWWWサーバ上のコンテンツを取得することができる。
+
+自班のWWWサーバに対して図\ref{doc5:connect_telnet}のようにtelnetで接続し、通信の様子を模倣してみよ。こののち、課題4を行う。
+
+
+\bigskip
+\begin{figure}[htbp]
+\begin{screen}
+\begin{verbatim}
+% telnet localhost 80
+(メッセージが表示され、入力待ち状態になる)
+GET /index.html
+(http://localhost/index.html の内容が取得できる)
+% 
+\end{verbatim}
+\end{screen}
+\caption{telnet による WWW サーバとの接続}
+\label{doc5:connect_telnet}
+
+\end{figure}
+\bigskip
+
+
+\begin{figure*}[bp]
+\begin{itembox}{メール}
+メールは、一般にバケツリレー方式で配送が行われる。すなわち、インターネット上にある複数の計算機を次々とメールが配送されていく\footnote{最近はDNS(Domain Name Service)というホスト情報データベースを参照することで直接目的の計算機に配送されることも多いが、バケツリレーの段数が1段になったものと理解しておいてほしい。}。この配送は、それぞれの計算機で動作しているMTA(Mail Transfer Agent)と呼ばれるdaemonプログラム\footnote{UNIXで、ユーザの利用の如何に関わらず、常に走っているプログラム。}によって自動的に行われる。
+
+一方、ユーザがMewでメールを送信する場合を考える。このとき、Mewはユーザが作成したメッセージを適当に再整形し、MTAに渡す。受け取ったMTAが、上記のバケツリレーを行って目的の計算機まで配送するわけである。ここでいうMewのように、ユーザとのインタフェースを担うメール読み書きプログラムのことをMUA(Mail User Agent)と呼ぶ。
+
+MTAによるメールのバケツリレーの記録は、各メールのヘッダ中の"Received:"フィールドに残っている。自分宛てのメールについて、確認してみるとよい。
+
+メールを配送する際に利用されるプロトコルがSMTP (Simple Mail Transfer Protocol)、メールを受信する際によく使われるプロトコルがPOP (Post Office Protocol)であり、ともにTCP{\slash}IPの上に実装されている。
+
+\end{itembox}
+\end{figure*}
+
+
+\section{CGI}
+\suppressfloats[t]
+
+プログラムで実行した結果をWWWページに反映させる手段がいくつか用意されているが、そのうちもっとも普及しているものがサーバのCGI (Common Gateway Interface)機能を利用する方法である。
+
+CGIを利用する場合、WWWサーバに設定を行う必要のある場合がある。今回利用するApacheの標準設定では、{\slash}usr{\slash}local{\slash}www{\slash}cgi-bin{\slash}の下にCGIスクリプトを置くことでCGIを利用することができる\footnote{一般ユーザのpublic{\_}htmlディレクトリなどにCGIを置いて利用する方法に興味がある人は別途質問されたい。}。たとえば、testというCGIスクリプトをおいたとしたら、そのURLはhttp:{\slash}{\slash}???{\slash}cgi-bin{\slash}testとなる。
+
+もっとも簡単なCGIスクリプトをリスト\ref{doc5:currentdate}に示す。これは現在の日付・時間を表示するものである。
+
+
+\bigskip
+
+リスト\refstepcounter{program}
+\theprogram : 現在の日付・時間を出力する CGI スクリプト
+\label{doc5:currentdate}
+\smallskip
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+#!/bin/sh
+
+echo "Content-Type: text/html"
+echo ""
+
+echo "<html>"
+echo "<head>"
+echo "<title>test</title>"
+echo "</head>"
+echo "<body>"
+date
+echo "</body>"
+echo "</html>"
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+この例からわかるように、CGIスクリプトは以下の条件を満たすようにプログラミングすればよい。
+
+
+\begin{itemize}
+\item 最初に"Content-Type: text{\slash}html"、ついで一行空行を出力する。
+\item そのあと、出力結果がHTMLファイルとなるように出力を行う。
+\end{itemize}
+
+この条件さえ満たせば、Cで書いてもPerlで書いてもシェルスクリプトで書いてもよい\footnote{世の中でPerlがCGIスクリプト言語の主流になっているのは、移植性が高いという理由でしかない。}。
+
+CGIについて課題5、課題6(発展課題)を用意してあるので、行うこと。
+
+
+\section*{課題}
+\suppressfloats[t]
+
+
+\subsection*{課題0}
+
+実験の過程で直面したトラブルについて、その症状、原因の究明過程、原因、解決方法などについて(自分で調べるなどして)記述せよ。
+
+
+\subsection*{課題1}
+
+自分でいくつかのWWWページを選び、w3mとnetscapeで表示結果を見比べよ。表示結果があまり異ならないページと大きく異なるページを挙げ、その理由について、HTMLの整形(レンダリング)という観点から理由を調べよ。
+
+
+\subsection*{課題2}
+
+WWWサーバのアクセス記録(ログ)が{\slash}var{\slash}log{\slash}httpd-access.logというファイルに残っているはずである。この中身を書き記し、記述されている内容について考察せよ。\ref{doc5:telnet}節の内容も参考にすること。(参考資料: {\slash}usr{\slash}local{\slash}share{\slash}doc{\slash}apache{\slash}logs.html, http:{\slash}{\slash}httpd.apache.org{\slash}docs{\slash}logs.html)
+
+
+\subsection*{課題3}
+
+comx200:{\slash}pub{\slash}access{\_}logは、ある週の言語・ソフトウェア工学研究室のWWWサーバのアクセス記録である。このログについて、以下の事柄をUNIX標準コマンドのみを用いて調べよ。調べた手順も書け。
+
+
+\begin{enumerate}
+\item 全アクセス数
+\item ユーザkunishiの公開しているファイルへのアクセス数
+\end{enumerate}
+
+
+\subsection*{課題4}
+
+図\ref{doc5:connect_telnet}での入力待ち状態でのメッセージを書き記せ。また、上記の方法で、\ref{doc5:myhomepage}節で作成したページの内容を取得し、実際のファイルの内容と比較してみよ。
+
+
+\subsection*{課題5}
+
+リスト\ref{doc5:currentdate}のスクリプトをcurrentdate.cgiというファイルとして作成し、パーミッションを755にして{\slash}usr{\slash}local{\slash}www{\slash}cgi-bin{\slash}に置き、http:{\slash}{\slash}localhost{\slash}cgi-bin{\slash}currentdate.cgiにアクセスしてCGIが動作していることを確かめよ。
+
+そののち、CGIプログラムはWWWブラウザに対してどのような出力を渡すか、作成したCGIプログラムと\ref{doc5:telnet}節で示したtelnetを用いる方法で得られた出力結果を示し、考察せよ。
+
+
+\subsection*{課題6}
+
+CGIプログラムをCで書いてみて、実行してみよ。たとえば「簡易版カウンタ」を書いてみよ。カウンタ数はファイルcount中に保存することとし、CGIスクリプトにアクセスしたら、countから読み込んできた値に1加えた値をHTMLとして出力し、その値をcountに書き戻す。\textbf{(発展課題。時間がなければ、省略してよい。)}
+
+
+\chapter{UNIX内部}
+
+
+\section{小規模アプリケーション: cat}
+\suppressfloats[t]
+
+lsやcatなど、標準的にUNIX環境で用意されているコマンドもC言語で書かれている。ソースファイルが{\slash}usr{\slash}srcの下にあるので、lsやcatなど、普段使い慣れているコマンドのソースを実際にコンパイルしたり、内容を読んだりする。
+
+
+\subsection{cat}
+
+ディレクトリ{\slash}usr{\slash}src{\slash}bin{\slash}cat{\slash}の下にある。C言語のソースは一つだけなので、中身を簡単に眺めた後、図\ref{doc6:cons:cat}のようにコンパイルをしてみる。
+
+
+\bigskip
+\begin{figure}[htbp]
+\begin{screen}
+\begin{verbatim}
+# cc -o cat cat.c
+\end{verbatim}
+\end{screen}
+\caption{catのコンパイル}
+\label{doc6:cons:cat}
+
+\end{figure}
+\bigskip
+
+こののち、課題1を行う。
+
+
+\subsection{echo}
+
+ディレクトリ{\slash}usr{\slash}src{\slash}bin{\slash}echo{\slash}の下にある。C言語のソースは一つだけ(リスト\ref{doc6:src:echo})である。このコマンドに関して、課題2を行う。
+
+
+\bigskip
+
+リスト\refstepcounter{program}
+\theprogram : echo.c
+\label{doc6:src:echo}
+\smallskip
+{\small {\hrule\endgraf\vspace*{1pt}\hrule}
+\nobreak
+\begin{verbatim}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int
+main(argc, argv)
+        int argc;
+        char *argv[];
+{
+        int nflag;
+
+        /* This utility may NOT do getopt(3) option parsing. */
+        if (*++argv && !strcmp(*argv, "-n")) {
+                ++argv;
+                nflag = 1;
+        }
+        else
+                nflag = 0;
+
+        while (argv[0]) {
+                int len = strlen(argv[0]);
+
+                if (len >= 2 && !argv[1]
+                    && argv[0][len - 2] == '\\'
+                    && argv[0][len - 1] == 'c') {
+                        argv[0][len - 2] = '\0';
+                        nflag = 1;
+                }
+                (void)printf("%s", argv[0]);
+                if (*++argv)
+                        putchar(' ');
+        }
+        if (!nflag)
+                putchar('\n');
+        exit(0);
+}
+\end{verbatim}
+\nobreak
+{\hrule\endgraf\vspace*{1pt}\hrule}
+}
+\bigskip
+
+
+\section{大規模アプリケーション}
+\suppressfloats[t]
+
+ここまで見てきたのはソースファイルの数が少ないものばかりであったが、より大規模なアプリケーションになると、ソースファイルの数もひじょうに増え、コンパイル作業もたいへんになる。そのため、makeなど、コンパイル作業を補助するツールが必要になってくる。
+
+大規模アプリケーションに関して、課題3・課題4を行う。
+
+
+\section{OSを壊す実験}
+\suppressfloats[t]
+
+最後の実験として、rootで"rm -rf {\slash}"を実行する実験を行う。
+
+UNIXのファイルシステムは{\slash}からはじまる木構造になっている。また、rootは強力な権限を持つユーザであり、すべてのファイルやディレクトリを変更・上書き・消去できる権限を持つ。一方、UNIXでは、今実行しようとするrmや、各種daemonプログラム、またUNIXの実行の核であるカーネル(kernel)とよばれる実行ファイルもすべて、一つのファイルとして存在している。
+
+したがって、この実験の目的は、「UNIXで、現在実行中のプログラムのファイルを消去しようとすると何が起こるか確かめる」と言い換えることができる。
+
+作業手順を実験時に指示するので、それにしたがい作業を進めること。また、課題を必ず参照すること。
+
+
+\section{後始末}
+\suppressfloats[t]
+
+これで実験は終了である。次のグループの実験のために、組み立てたPCを元の状態に分解し、片付ける。部品を壊さないよう、丁寧に扱うこと。また、元の箱・袋に入っているか、ケースのネジの締め忘れがないか、などにも注意しておく。
+
+
+\section*{課題}
+\suppressfloats[t]
+
+
+\subsection*{課題0}
+
+実験の過程で直面したトラブルについて、その症状、原因の究明過程、原因、解決方法などについて(自分で調べるなどして)記述せよ。
+
+
+\subsection*{課題1}
+
+{\slash}usr{\slash}src{\slash}bin{\slash}cat{\slash}の下でコンパイルして作った実行形式ファイルcatが{\slash}bin{\slash}catと同じ振舞いをするか、具体例を用いて確かめよ。確かめた方法も記述せよ。
+
+
+\subsection*{課題2}
+
+echoというコマンド({\slash}usr{\slash}bin{\slash}echo)について、以下の課題を行え。
+
+
+\begin{enumerate}
+\item 実際にコマンドを実行させ、その振舞いを調べよ。
+\item リスト\ref{doc6:src:echo}のC言語プログラムを解析し、どういう動作をするコマンドか述べよ。
+\item オプションを付けたときの振舞いについて、C言語プログラムの解析結果をもとにコマンドを実行させ、振舞いを調べよ。
+\end{enumerate}
+
+適宜オンラインマニュアルを参照すること。なお、Solarisでは{\slash}usr{\slash}ucb{\slash}echoがほぼ同じ動作をする。
+
+
+\subsection*{課題3}
+
+{\slash}usr{\slash}src{\slash}bin{\slash}lsにてrootでmakeに関して次のような操作を行い\footnote{できあがった実行形式ファイルはlsである。実際に実行して、振舞いを確認してみるとよい。}、その振舞いを述べよ。
+
+
+\begin{enumerate}
+\item make
+\item make clean
+\item make
+\item rm ls; make
+\item rm ls.o; make
+\item touch util.c; make (touchが何をするコマンドか調べてレポートに記載すること)
+\end{enumerate}
+
+上記の結果より、makeが何を行うコマンドなのかまとめよ。
+
+
+\subsection*{課題4}
+
+emacsのソース(emacs-20.7.tar.gz)を展開し、この中に.cファイル、.hファイルがそれぞれいくつ含まれているか調べよ。調べた方法も記載すること。
+
+
+\subsection*{課題5}
+
+「OSを壊す実験」について、以下の内容をまとめ、報告せよ。
+
+
+\begin{enumerate}
+\item 実験結果の予想。かならず実験を始める前に各自で結果の予想を立てよ。
+\item 実験手順の報告。rmを実行中に試したことがあれば、それについても述べること。
+\item 実験結果の報告。
+\item 実験結果の考察。予想と合っていたかどうか、なぜこのような結果が出て、自分の予想はどこが違っていたのか、など。
+\end{enumerate}
+
+実際に何が起こるか、結果を記したWWWページがある(URLは演習中に指示)。このページを見たり、オペレーティングシステムに関する書籍を参照するなどして、まとめること。
+
+
+\subsection*{課題6}
+
+来年度以降の参考にしますので、今回の実験を通しての感想を書いてください。
+
+
+\chapter*{参考文献}
+
+
+\begin{enumerate}
+\item http:{\slash}{\slash}www.tkcity.net{\slash}{\~{}}nobusan{\slash}hardware{\slash}boot{\_}hdd{\slash}index.html
+\item http:{\slash}{\slash}www.sra.co.jp{\slash}people{\slash}katsu{\slash}doc{\slash}rmrf{\slash}
+\end{enumerate}
+
+
+\end{document}

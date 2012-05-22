@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc xml:lang="ja">
+<head>
+<title>LAN</title>
+<author>国島丈生</author>
+<date>2002-05</date>
+</head>
+<body>
+<section title="WWW">
+<subsection title="WWWの仕組み">
+WWW(World Wide Web)はサーバ・クライアント型のシステムであり、「WWWサー
+バ」と「WWWクライアント」との通信によって動作している。
+
+WWWクライアントは、いわゆるWWWブラウザである。一方、WWWサーバはコンテ
+ンツ(ホームページのソースファイルや画像など)を保持し、WWWクライアント
+からの要求に応じてコンテンツを送信する。この送受信のプロトコル<note>デー
+タのやり取りの方式や手順に関する規約。</note>がHTTP(HyperText Transfer
+Protocol)と呼ばれるものである<note>URLの先頭の "http:" は、HTTPでコン
+テンツの送信を行うという意味である。</note>。WWWクライアントで受信され
+たコンテンツは、WWWクライアント側で整形され画面に表示される。
+
+WWWサーバとWWWクライアントの通信の様子を見てもらうため、各PCにWWWサーバ
+とWWWクライアントをインストールし、実際にネットワークを介してアクセスし
+てもらう。
+</subsection>
+<subsection title="必要な設定の確認">
+この章の課題を行うには、これまでの課題・設定が正しく行えている必要がある。
+次の点に注意しておくこと。
+<ul>
+<li>netscapeが導入できていない……第2回の「FreeBSDのインストール」の際
+に XFree86 のパッケージがうまくインストールできておらず、netscape パッ
+ケージの導入に失敗した可能性が高い。配布した CD-ROM をセットし、
+XFree86 を正しく導入した後、/stand/sysinstall を用いて netscape を導入
+する。</li>
+<li>/usr/portsがない、もしくはその下に何もない……上と同じく、OSのイン
+ストール時に選択を誤っている。同じく、/stand/sysinstall を用いて ports 
+を導入する。</li>
+<li>/etc/hostsの設定……OSのパッケージを追加インストールした場合、選択
+を誤ったなどの理由で /etc/ の下のファイルが上書きされている場合がある。
+特に /etc/hosts に自班・他班のホスト名がすべて書かれている必要がある。
+</li>
+</ul>
+</subsection>
+<subsection title="テキスト型WWWブラウザ w3m">
+最近の UNIX 環境では、使いやすさ、バージョンアップのしやすさなどを考慮
+して、パッケージ管理ツールが用意されていることが多い。Linux の rpm や 
+apt (Debian)、FreeBSD などの ports、Solaris の pkg_info などがその例で
+ある。パッケージ管理ツールでは、おおむね次のような機能が提供されている。
+<ul>
+<li>どのファイルがどのパッケージに属するものかを記録</li>
+<li>ファイルの一括追加・削除</li>
+<li>インストール時の設定の支援機能</li>
+<li>パッケージのバージョンアップ</li>
+</ul>
+
+ここでは、FreeBSD で提供されている ports というパッケージ作成・管理支
+援ツールを用い、w3m というテキストベースのWWWブラウザをインストールする。
+
+<console title="w3mのインストール">
+演習用anonymous ftpサーバ(ホスト名comx200)のディレクトリ /pub から 
+w3m-0.1.11-pre.tar.gz, w3m-0.1.11-pre-kokb17.patch.gz,
+gc5.0alpha4.tar.gz を取得し、/usr/ports/distfiles/ に置く。/usr/ports 
+以下に何もファイルがない場合は、第2回目の OS のインストールに失敗して
+いるので、/stand/sysinstall を用いて ports を追加インストールする。
+% su -
+# cd /usr/ports/japanese/w3m
+# make install
+# exit
+% 
+</console>
+
+このあと、課題1を行う。
+<fyi title="ports">
+w3m のインストールにおいて、"make install" としただけでアプリケーショ
+ンがインストールされたことに注意されたい。FreeBSD の ports は、make を
+用いてアプリケーションのソースファイルの取得、展開、configure 等のコマ
+ンドの実行、コンパイルなどを自動で制御している。
+</fyi>
+</subsection>
+<subsection title="WWWサーバ〜apache">
+ついでWWWサーバをインストールする。今回は、フリーウェアのWWWサーバでもっ
+とも有名な Apache (http://www.apache.org/)というソフトウェアを使う
+ことにする。これもportsでインストールを行う。comx200:/pub から
+apache-1.3.??.tar.gz というファイルを取得し、/usr/ports/distfiles/ に
+置く。そののち、<a href="#apache_installation"></a>に示す手順でインス
+トールを行う。
+<console title="apacheのインストール" id="apache_installation">
+# cd /usr/ports/www/apache13
+# make install
+# cd /usr/local/etc/apache
+# cp access.conf.default access.conf (もし access.conf がなければ)
+# cp httpd.conf.default httpd.conf (もし httpd.conf がなければ)
+# cp magic.default magic (もし magic がなければ)
+# cp mime.types.default mime.types (もし mime.types がなければ)
+# cp srm.conf.default srm.conf (もし srm.conf がなければ)
+# /usr/local/etc/rc.d/apache.sh start
+</console>
+
+netscape で http://comx2??/ にアクセスし、インディアンの羽根の絵のつい
+たページが表示されれば成功である。
+</subsection>
+<subsection title="ホームページを立ち上げる" id="myhomepage">
+一般ユーザ(user2??)でログインし、実際にホームページを作成する。
+<ol>
+<li>ホームディレクトリに public_html というディレクトリを作る。</li>
+<li>その下にindex.htmlというHTMLファイルを置く。HTMLファイルの記述方法
+はコラム「HTML」を参照のこと。</li>
+<li>netscape で http://comx2??/~user2??/index.htmlにアクセスしてみる。</li>
+<li>他班のページにもアクセスしてみる。</li>
+</ol>
+
+こののち、課題2、課題3を行う。
+<fyi title="HTML">
+HTML(HyperText Markup Language)は WWW のコンテンツを記述するためのもっ
+とも標準的なマークアップ言語である。細かい文法は国際規格によって定めら
+れているが、おおむね次のように記述する。
+<program>
+<![CDATA[
+<html>
+  <head>
+    <title>ここにタイトルを書く</title>
+  </head>
+  <body>
+    <h1>大見出し</h1>
+    <p>本文はここに書く。</p>
+    <ul>
+      <li>LaTeXのitemize環境に相当する書き方</li>
+    </ul>
+    <ol>
+      <li>LaTeXのenumerate環境に相当する書き方</li>
+    </ol>
+  </body>
+</html>
+]]>
+</program>
+</fyi>
+</subsection>
+</section>
+
+<section title="インターネットプロトコルの仕組み" id="telnet">
+HTTP は TCP/IP (Transmission Control Protocol/Internet Protocol)と呼ば
+れるインターネット標準プロトコルの上に構成された通信プロトコルであり、
+そのやり取りの様子を telnet という TCP/IP のための汎用通信コマンドで手
+動で模倣することができる。HTTP の場合は、"GET" というコマンドを用いて
+WWW サーバ上のコンテンツを取得することができる。
+
+自班の WWW サーバに対して<a href="#connect_telnet"></a>のように telnet 
+で接続し、通信の様子を模倣してみよ。こののち、課題4を行う。
+<console title="telnet による WWW サーバとの接続" id="connect_telnet">
+% telnet localhost 80
+(メッセージが表示され、入力待ち状態になる)
+GET /index.html
+(http://localhost/index.html の内容が取得できる)
+% 
+</console>
+<fyi title="メール">
+メールは、一般にバケツリレー方式で配送が行われる。すなわち、インターネッ
+ト上にある複数の計算機を次々とメールが配送されていく<note>最近は
+DNS(Domain Name Service)というホスト情報データベースを参照することで直
+接目的の計算機に配送されることも多いが、バケツリレーの段数が1段になっ
+たものと理解しておいてほしい。</note>。この配送は、それぞれの計算機で
+動作しているMTA(Mail Transfer Agent)と呼ばれるdaemonプログラム
+<note>UNIXで、ユーザの利用の如何に関わらず、常に走っているプログラム。
+</note>によって自動的に行われる。
+
+一方、ユーザがMewでメールを送信する場合を考える。このとき、Mewはユーザが
+作成したメッセージを適当に再整形し、MTAに渡す。受け取ったMTAが、上記のバ
+ケツリレーを行って目的の計算機まで配送するわけである。ここでいうMewのよ
+うに、ユーザとのインタフェースを担うメール読み書きプログラムのことを
+MUA(Mail User Agent)と呼ぶ。
+
+MTAによるメールのバケツリレーの記録は、各メールのヘッダ中の "Received:"
+フィールドに残っている。自分宛てのメールについて、確認してみるとよい。
+
+メールを配送する際に利用されるプロトコルが SMTP (Simple Mail Transfer
+Protocol)、メールを受信する際によく使われるプロトコルが POP (Post
+Office Protocol)であり、ともに TCP/IP の上に実装されている。
+</fyi>
+</section>
+<section title="CGI">
+プログラムで実行した結果を WWW ページに反映させる手段がいくつか用意さ
+れているが、そのうちもっとも普及しているものがサーバの CGI (Common
+Gateway Interface)機能を利用する方法である。
+
+CGI を利用する場合、WWW サーバに設定を行う必要のある場合がある。今回利
+用する Apache の標準設定では、/usr/local/www/cgi-bin/ の下に CGI スク
+リプトを置くことで CGI を利用することができる<note>一般ユーザの 
+public_html ディレクトリなどに CGI を置いて利用する方法に興味がある人
+は別途質問されたい。</note>。たとえば、test という CGI スクリプトをお
+いたとしたら、その URL は http://???/cgi-bin/test となる。
+
+もっとも簡単なCGIスクリプトを<a href="#currentdate"></a>に示す。これは
+現在の日付・時間を表示するものである。
+<program title="現在の日付・時間を出力する CGI スクリプト" id="currentdate">
+<![CDATA[
+#!/bin/sh
+
+echo "Content-Type: text/html"
+echo ""
+
+echo "<html>"
+echo "<head>"
+echo "<title>test</title>"
+echo "</head>"
+echo "<body>"
+date
+echo "</body>"
+echo "</html>"
+]]>
+</program>
+この例からわかるように、CGI スクリプトは以下の条件を満たすようにプログ
+ラミングすればよい。
+<ul>
+<li>最初に "Content-Type: text/html"、ついで一行空行を出力する。</li>
+<li>そのあと、出力結果がHTMLファイルとなるように出力を行う。</li>
+</ul>
+この条件さえ満たせば、Cで書いても Perl で書いてもシェルスクリプトで書
+いてもよい<note>世の中で Perl が CGI スクリプト言語の主流になっている
+のは、移植性が高いという理由でしかない。</note>。
+
+CGI について課題5、課題6(発展課題)を用意してあるので、行うこと。
+</section>
+<section sequencable="false" title="課題">
+<subsection sequencable="false" title="課題0">
+実験の過程で直面したトラブルについて、その症状、原因の究明過程、原因、
+解決方法などについて(自分で調べるなどして)記述せよ。
+</subsection>
+<subsection sequencable="false" title="課題1" id="ex:rendoring">
+自分でいくつかの WWW ページを選び、w3m と netscape で表示結果を見比べよ。
+表示結果があまり異ならないページと大きく異なるページを挙げ、その理由に
+ついて、HTML の整形(レンダリング)という観点から理由を調べよ。
+</subsection>
+<subsection sequencable="false" title="課題2" id="ex:access_log">
+WWWサーバのアクセス記録(ログ)が /var/log/httpd-access.log というファイ
+ルに残っているはずである。この中身を書き記し、記述されている内容につい
+て考察せよ。<a href="#telnet"/>の内容も参考にすること。(参考資料:
+/usr/local/share/doc/apache/logs.html,
+http://httpd.apache.org/docs/logs.html)
+</subsection>
+<subsection sequencable="false" title="課題3" id="ex:grep">
+comx200:/pub/access_log は、ある週の言語・ソフトウェア工学研究室の WWW
+サーバのアクセス記録である。このログについて、以下の事柄を UNIX 標準コ
+マンドのみを用いて調べよ。調べた手順も書け。
+<ol>
+<li>全アクセス数</li>
+<li>ユーザ kunishi の公開しているファイルへのアクセス数</li>
+</ol>
+</subsection>
+<subsection sequencable="false" title="課題4" id="ex:telnet_http">
+<a href="#connect_telnet"></a>での入力待ち状態でのメッセージを書き記せ。
+また、上記の方法で、<a href="#myhomepage"></a>で作成したページの内容を
+取得し、実際のファイルの内容と比較してみよ。
+</subsection>
+<subsection sequencable="false" title="課題5" id="ex:currentdate">
+<a href="#currentdate"></a>のスクリプトを currentdate.cgi というファイ
+ルとして作成し、パーミッションを 755 にして /usr/local/www/cgi-bin/ に
+置き、http://localhost/cgi-bin/currentdate.cgi にアクセスして CGI が動
+作していることを確かめよ。
+
+そののち、CGIプログラムは WWW ブラウザに対してどのような出力を渡すか、
+作成した CGI プログラムと<a href="#telnet"></a>で示した telnet を用い
+る方法で得られた出力結果を示し、考察せよ。
+</subsection>
+<subsection sequencable="false" title="課題6" id="ex:c_cgi">
+CGI プログラムを C で書いてみて、実行してみよ。たとえば「簡易版カウン
+タ」を書いてみよ。カウンタ数はファイル count 中に保存することとし、CGI 
+スクリプトにアクセスしたら、count から読み込んできた値に1加えた値を
+HTMLとして出力し、その値を count に書き戻す。
+<b>(発展課題。時間がなければ、省略してよい。)</b>
+</subsection>
+</section>
+</body>
+</doc>

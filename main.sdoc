@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<doc xml:lang="ja" encoding="iso-2022-jp">
+<head>
+<title>情報通信工学演習II(計算機基礎)テキスト</title>
+<author>担当: 国島丈生、山内仁</author>
+<date>平成14年度版</date>
+</head>
+<body>
+<native format="latex2e">
+\renewcommand{\baselinestretch}{0.9}
+</native>
+
+<chapter src='intro.sdoc'/>
+<chapter src='assemble.sdoc'/>
+<chapter src='install-unix.sdoc'/>
+<chapter src='network.sdoc'/>
+<chapter src='internal-unix.sdoc'/>
+<chapter title="参考文献" sequencable="false">
+<ol>
+<li>http://www.tkcity.net/~nobusan/hardware/boot_hdd/index.html</li>
+<li>http://www.sra.co.jp/people/katsu/doc/rmrf/</li>
+</ol>
+</chapter>
+</body>
+</doc>
